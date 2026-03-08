@@ -1,8 +1,9 @@
 const pool = require("../db/pool");
+const { buildPlusPagosPayload } = require("./pluspagos.service");
 
 async function iniciarPago({ solicitudId, email }) {
   const [rows] = await pool.query(
-    `SELECT id, nro_tramite, estado, email
+    `SELECT id, nro_tramite, estado, email, nombre, apellido
      FROM solicitudes
      WHERE id = ? AND email = ?
      LIMIT 1`,
@@ -23,15 +24,12 @@ async function iniciarPago({ solicitudId, email }) {
     };
   }
 
+  const pluspagos = buildPlusPagosPayload({ solicitud });
+
   return {
     ok: true,
-    solicitudId: solicitud.id,
-    nroTramite: solicitud.nro_tramite,
-    estado: solicitud.estado,
-
-    // En una integración real esto vendría de la pasarela.
-    // Por ahora devolvemos la referencia para probar el flujo.
-    transaccionComercioId: String(solicitud.id),
+    solicitud,
+    pluspagos,
   };
 }
 
@@ -53,7 +51,6 @@ async function procesarWebhookPago(payload) {
     return { ok: false, status: 404, message: "Solicitud no encontrada" };
   }
 
-  // EstadoId = 3 => pago aprobado
   if (String(EstadoId) === "3") {
     await pool.query(
       `UPDATE solicitudes
@@ -67,7 +64,6 @@ async function procesarWebhookPago(payload) {
     return { ok: true, nuevoEstado: "PAGADO" };
   }
 
-  // Cualquier otro estado lo tratamos como rechazo por ahora
   await pool.query(
     `UPDATE solicitudes
      SET estado = 'RECHAZADO',

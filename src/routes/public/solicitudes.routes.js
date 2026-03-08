@@ -3,7 +3,7 @@ const router = express.Router();
 
 const authPublic = require("../../middleware/authPublic");
 const solicitudesService = require("../../services/solicitudes.service");
-
+const certificadoService = require("../../services/certificado.service");
 // POST /api/public/solicitudes
 router.post("/", authPublic, async (req, res) => {
   const { cuil, nombre, apellido } = req.body;
@@ -71,5 +71,34 @@ router.get("/:id", authPublic, async (req, res) => {
     item: row,
   });
 });
+router.get("/:id/certificado", authPublic, async (req, res) => {
+  const email = req.user.email;
+  const id = Number(req.params.id);
 
+  const solicitud = await solicitudesService.obtenerSolicitudPublicadaPorId(email, id);
+
+  if (!solicitud) {
+    return res.status(404).json({
+      ok: false,
+      message: "Solicitud no encontrada",
+    });
+  }
+
+  if (solicitud.estado !== "PUBLICADO") {
+    return res.status(400).json({
+      ok: false,
+      message: "El certificado solo puede descargarse cuando la solicitud está PUBLICADA",
+    });
+  }
+
+  const pdfBuffer = await certificadoService.generarCertificadoPDF(solicitud);
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="certificado-${solicitud.nro_tramite}.pdf"`
+  );
+
+  res.send(pdfBuffer);
+});
 module.exports = router;

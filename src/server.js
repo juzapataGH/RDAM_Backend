@@ -1,12 +1,10 @@
 require("dotenv").config();
-
 const app = require("./app");
+const { iniciarCronVencimientos } = require("./jobs/vencimientos.job");
 
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`✅ RDAM corriendo en http://localhost:${PORT}`);
-}).on("error", (err) => {
-  console.error("❌ Error al iniciar el servidor:", err.message);
-  process.exit(1);
+  iniciarCronVencimientos();
 });

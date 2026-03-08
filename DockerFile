@@ -1,0 +1,19 @@
+FROM node:20
+
+# carpeta de trabajo dentro del contenedor
+WORKDIR /app
+
+# copiar package.json
+COPY package*.json ./
+
+# instalar dependencias
+RUN npm install
+
+# copiar el resto del proyecto
+COPY . .
+
+# puerto que usa tu API
+EXPOSE 3000
+
+# comando de inicio
+CMD ["npm", "run", "dev"]
