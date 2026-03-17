@@ -116,7 +116,7 @@ async function obtenerSolicitudPublicadaPorId(email, id) {
 }
 
 async function listarSolicitudesInternas(user, filtros = {}) {
-  const { estado, fechaDesde, fechaHasta } = filtros;
+  const { estado, fechaDesde, fechaHasta, q } = filtros;
 
   let sql = `
     SELECT 
@@ -129,6 +129,7 @@ async function listarSolicitudesInternas(user, filtros = {}) {
 
   const params = [];
 
+  // Si es operador, solo ve su distrito
   if (user.rol !== "ADMIN") {
     sql += ` AND s.distrito_id = ?`;
     params.push(user.distritoId);
@@ -147,6 +148,21 @@ async function listarSolicitudesInternas(user, filtros = {}) {
   if (fechaHasta) {
     sql += ` AND DATE(s.created_at) <= ?`;
     params.push(fechaHasta);
+  }
+
+  if (q) {
+    sql += `
+      AND (
+        s.nro_tramite LIKE ?
+        OR s.cuil LIKE ?
+        OR s.nombre LIKE ?
+        OR s.apellido LIKE ?
+        OR s.email LIKE ?
+      )
+    `;
+
+    const like = `%${q}%`;
+    params.push(like, like, like, like, like);
   }
 
   sql += ` ORDER BY s.created_at DESC`;

@@ -6,12 +6,12 @@ const solicitudesService = require("../../services/solicitudes.service");
 const certificadoService = require("../../services/certificado.service");
 // POST /api/public/solicitudes
 router.post("/", authPublic, async (req, res) => {
-  const { cuil, nombre, apellido } = req.body;
+  const { cuil, nombre, apellido, distritoId } = req.body;
 
-  if (!cuil || !nombre || !apellido) {
+  if (!cuil || !nombre || !apellido || !distritoId) {
     return res.status(400).json({
       ok: false,
-      message: "cuil, nombre y apellido son requeridos",
+      message: "cuil, nombre, apellido y distritoId son requeridos",
     });
   }
 
@@ -22,6 +22,7 @@ router.post("/", authPublic, async (req, res) => {
     cuil,
     nombre,
     apellido,
+    distritoId,
   });
 
   res.status(201).json({

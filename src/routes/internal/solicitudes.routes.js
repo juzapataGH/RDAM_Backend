@@ -11,11 +11,11 @@ const solicitudesService = require("../../services/solicitudes.service");
  */
 router.get("/", authInternal, async (req, res) => {
   try {
-    const { estado, fechaDesde, fechaHasta } = req.query;
+    const { estado, fechaDesde, fechaHasta, q } = req.query;
 
     const solicitudes = await solicitudesService.listarSolicitudesInternas(
       req.user,
-      { estado, fechaDesde, fechaHasta }
+      { estado, fechaDesde, fechaHasta, q }
     );
 
     res.json({
@@ -24,10 +24,10 @@ router.get("/", authInternal, async (req, res) => {
         estado: estado || null,
         fechaDesde: fechaDesde || null,
         fechaHasta: fechaHasta || null,
+        q: q || null,
       },
       items: solicitudes,
     });
-
   } catch (error) {
     console.error("❌ Error listar solicitudes internas:", error);
 
@@ -37,7 +37,6 @@ router.get("/", authInternal, async (req, res) => {
     });
   }
 });
-
 
 /**
  * =====================================
@@ -61,7 +60,6 @@ router.put("/:id/publicar", authInternal, async (req, res) => {
       ok: true,
       estado: result.estado
     });
-
   } catch (error) {
     console.error("❌ Error publicar solicitud:", error);
 
