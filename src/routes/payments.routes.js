@@ -166,7 +166,6 @@ router.get("/resultado", (req, res) => {
 <body>
   <div class="card">
     <h1>${ok ? "✅ Pago procesado" : "❌ Pago rechazado"}</h1>
-    <p>Solicitud ID: ${solicitudId || "-"}</p>
     <p>Serás redirigido automáticamente...</p>
     <a href="${redirectFrontend}" style="display:inline-block;margin-top:16px;color:#2563eb;">
       Volver ahora
