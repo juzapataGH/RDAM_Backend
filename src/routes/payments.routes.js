@@ -54,7 +54,7 @@ router.get("/redirect/:solicitudId", async (req, res) => {
 
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (payload.scope !== "PUBLIC") {
+    if (payload.scope !== "Public") {
       return res.status(403).send("<h1>Token inválido para pagos públicos</h1>");
     }
 
@@ -92,21 +92,66 @@ router.post("/webhook", async (req, res) => {
 });
 
 // Callback de éxito
-router.post("/callback/success", (req, res) => {
-  console.log("✅ Callback success recibido:", req.body);
-  res.json({ ok: true });
+router.post("/callback/success", async (req, res) => {
+  try {
+    console.log("✅ Callback success recibido:", req.body);
+
+    const result = await paymentsService.procesarWebhookPago({
+      EstadoId: "3",
+      TransaccionComercioId:
+        req.query.solicitudId ||
+        req.body?.transaccionId ||
+        req.body?.comercioId ||
+        req.body?.TransaccionComercioId,
+    });
+
+    if (!result.ok) {
+      return res.status(result.status).json({
+        ok: false,
+        message: result.message,
+      });
+    }
+
+    res.json({ ok: true, nuevoEstado: result.nuevoEstado });
+  } catch (error) {
+    console.error("Error en callback success:", error);
+    res.status(500).json({ ok: false, message: error.message });
+  }
 });
 
-// Callback de cancelación / rechazo
-router.post("/callback/cancel", (req, res) => {
-  console.log("❌ Callback cancel recibido:", req.body);
-  res.json({ ok: true });
+router.post("/callback/cancel", async (req, res) => {
+  try {
+    console.log("❌ Callback cancel recibido:", req.body);
+
+    const result = await paymentsService.procesarWebhookPago({
+      EstadoId: "4",
+      TransaccionComercioId:
+        req.query.solicitudId ||
+        req.body?.transaccionId ||
+        req.body?.comercioId ||
+        req.body?.TransaccionComercioId,
+    });
+
+    if (!result.ok) {
+      return res.status(result.status).json({
+        ok: false,
+        message: result.message,
+      });
+    }
+
+    res.json({ ok: true, nuevoEstado: result.nuevoEstado });
+  } catch (error) {
+    console.error("Error en callback cancel:", error);
+    res.status(500).json({ ok: false, message: error.message });
+  }
 });
 
 // Resultado para el usuario
 router.get("/resultado", (req, res) => {
   const { status, solicitudId } = req.query;
   const ok = status === "success";
+
+  const redirectFrontend = `${process.env.FRONTEND_BASE_URL || "http://localhost:5173"}/mis-certificados?refresh=1&solicitudId=${solicitudId || ""}&status=${status || ""}`;
 
   res.send(`<!DOCTYPE html>
 <html lang="es">
@@ -122,10 +167,18 @@ router.get("/resultado", (req, res) => {
   <div class="card">
     <h1>${ok ? "✅ Pago procesado" : "❌ Pago rechazado"}</h1>
     <p>Solicitud ID: ${solicitudId || "-"}</p>
-    <p>${ok ? "La pasarela informó el resultado. Podés volver al sistema." : "No se pudo completar el pago."}</p>
+    <p>Serás redirigido automáticamente...</p>
+    <a href="${redirectFrontend}" style="display:inline-block;margin-top:16px;color:#2563eb;">
+      Volver ahora
+    </a>
   </div>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = "${redirectFrontend}";
+    }, 3000);
+  </script>
 </body>
 </html>`);
 });
-
 module.exports = router;

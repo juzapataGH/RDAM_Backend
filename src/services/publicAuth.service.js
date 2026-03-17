@@ -8,9 +8,10 @@ function generate6DigitCode() {
 
 async function requestCode(email) {
   const code = generate6DigitCode();
+
   const codeHash = await bcrypt.hash(code, 10);
 
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
   await pool.query(
     `INSERT INTO public_login_tokens (email, code_hash, expires_at)
@@ -18,7 +19,8 @@ async function requestCode(email) {
     [email, codeHash, expiresAt]
   );
 
-  console.log(`📩 [DEV] Código para ${email}: ${code}`);
+  await enviarCodigoOTP(email, code);
+
   return { ok: true };
 }
 

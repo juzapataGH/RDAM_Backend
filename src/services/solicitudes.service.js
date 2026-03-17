@@ -1,5 +1,6 @@
 const pool = require("../db/pool");
 const auditoriaService = require("./auditoria.service");
+
 function buildNroTramite() {
   const now = new Date();
   const yyyy = now.getFullYear();
@@ -12,7 +13,6 @@ function buildNroTramite() {
 
 async function crearSolicitud({ email, cuil, nombre, apellido, distritoId }) {
 
-  // si no viene distritoId, usar 1
   const distritoIdFinal = distritoId || 1;
 
   console.log("Distrito usado:", distritoIdFinal);
@@ -40,10 +40,8 @@ async function listarSolicitudes(email) {
         s.estado,
         s.referencia_pago,
         s.fecha_pago,
-        s.fecha_aprobacion,
         s.fecha_publicacion,
         s.fecha_vencimiento,
-        s.observaciones,
         s.created_at,
         s.updated_at,
         s.cuil,
@@ -69,10 +67,8 @@ async function obtenerSolicitudPorId(email, id) {
         s.estado,
         s.referencia_pago,
         s.fecha_pago,
-        s.fecha_aprobacion,
         s.fecha_publicacion,
         s.fecha_vencimiento,
-        s.observaciones,
         s.created_at,
         s.updated_at,
         s.cuil,
@@ -105,10 +101,8 @@ async function obtenerSolicitudPublicadaPorId(email, id) {
         d.nombre AS distrito,
         s.referencia_pago,
         s.fecha_pago,
-        s.fecha_aprobacion,
         s.fecha_publicacion,
         s.fecha_vencimiento,
-        s.observaciones,
         s.created_at,
         s.updated_at
      FROM solicitudes s
@@ -135,25 +129,21 @@ async function listarSolicitudesInternas(user, filtros = {}) {
 
   const params = [];
 
-  // Si es operador, solo ve su distrito
   if (user.rol !== "ADMIN") {
     sql += ` AND s.distrito_id = ?`;
     params.push(user.distritoId);
   }
 
-  // Filtro por estado
   if (estado) {
     sql += ` AND s.estado = ?`;
     params.push(estado);
   }
 
-  // Filtro por fecha desde
   if (fechaDesde) {
     sql += ` AND DATE(s.created_at) >= ?`;
     params.push(fechaDesde);
   }
 
-  // Filtro por fecha hasta
   if (fechaHasta) {
     sql += ` AND DATE(s.created_at) <= ?`;
     params.push(fechaHasta);
@@ -166,6 +156,7 @@ async function listarSolicitudesInternas(user, filtros = {}) {
 }
 
 async function publicarSolicitud(solicitudId, user) {
+
   const [rows] = await pool.query(
     `SELECT id, estado
      FROM solicitudes

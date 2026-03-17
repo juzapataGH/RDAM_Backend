@@ -66,8 +66,7 @@ async function procesarWebhookPago(payload) {
 
   await pool.query(
     `UPDATE solicitudes
-     SET estado = 'RECHAZADO',
-         observaciones = 'Pago rechazado por pasarela'
+     SET estado = 'RECHAZADO'
      WHERE id = ?`,
     [solicitudId]
   );

@@ -18,19 +18,23 @@ function buildPlusPagosPayload({ solicitud, producto = "Certificado RDAM" }) {
   const pluspagosUrl = process.env.PLUSPAGOS_URL;
   const merchantGuid = process.env.PLUSPAGOS_MERCHANT_GUID;
   const secret = process.env.PLUSPAGOS_SECRET_KEY;
-  const appBaseUrl = process.env.APP_BASE_URL || "http://localhost:3000";
 
-  // Monto fijo de ejemplo: $2500
+  const internalApiBaseUrl =
+    process.env.INTERNAL_API_BASE_URL || "http://rdam-api:3000";
+
+  const publicApiBaseUrl =
+    process.env.APP_BASE_URL || "http://localhost:3000";
+
   const montoPesos = 2500;
   const montoCentavos = String(montoPesos * 100);
 
   const transaccionId = String(solicitud.id);
 
-  const callbackSuccess = `${appBaseUrl}/api/payments/callback/success?solicitudId=${solicitud.id}`;
-  const callbackCancel = `${appBaseUrl}/api/payments/callback/cancel?solicitudId=${solicitud.id}`;
+  const callbackSuccess = `${internalApiBaseUrl}/api/payments/callback/success?solicitudId=${solicitud.id}`;
+  const callbackCancel = `${internalApiBaseUrl}/api/payments/callback/cancel?solicitudId=${solicitud.id}`;
 
-  const urlSuccess = `${appBaseUrl}/api/payments/resultado?status=success&solicitudId=${solicitud.id}`;
-  const urlError = `${appBaseUrl}/api/payments/resultado?status=error&solicitudId=${solicitud.id}`;
+  const urlSuccess = `${publicApiBaseUrl}/api/payments/resultado?status=success&solicitudId=${solicitud.id}`;
+  const urlError = `${publicApiBaseUrl}/api/payments/resultado?status=error&solicitudId=${solicitud.id}`;
 
   const informacion = JSON.stringify({
     producto,

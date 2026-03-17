@@ -57,7 +57,7 @@ VALUES
 'Administrador',
 'Sistema',
 'admin@rdam.com',
-'$2b$10$CwTycUXWue0Thq9StjUM0uJ8cY9qsJh0kGugHgdGXNq35p3xNmPRK',
+'$2b$10$J0LC5Yj29R.wTWQHvT9XMeGfrg7F/w2LQlU6VPm5IJlHylEgPcgAu',
 1,
 NULL
 );
@@ -69,7 +69,7 @@ VALUES
 'Operador',
 'Santa Fe',
 'operador@rdam.com',
-'$2b$10$CwTycUXWue0Thq9StjUM0uJ8cY9qsJh0kGugHgdGXNq35p3xNmPRK',
+'$2b$10$AoqdWyQZP.VOxpsUQ2MU1uHSenHpBWiv1pzpMTFNojvwglm5HbVSG',
 2,
 1
 );

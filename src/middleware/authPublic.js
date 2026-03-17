@@ -1,24 +1,38 @@
 const jwt = require("jsonwebtoken");
 
 function authPublic(req, res, next) {
-  const authHeader = req.headers.authorization || "";
-  const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : null;
-
-  if (!token) {
-    return res.status(401).json({ ok: false, message: "Falta token Bearer" });
-  }
-
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const authHeader = req.headers.authorization;
 
-    if (payload.scope !== "PUBLIC") {
-      return res.status(403).json({ ok: false, message: "Token inválido para scope PUBLIC" });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res.status(401).json({
+        ok: false,
+        message: "Token no enviado",
+      });
     }
 
-    req.user = payload; // { email, scope, iat, exp }
+    const token = authHeader.split(" ")[1];
+
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+
+    console.log("PAYLOAD TOKEN PUBLICO:", payload);
+
+    if (payload.scope !== "Public") {
+      return res.status(403).json({
+        ok: false,
+        message: "Token invalido para scope Public",
+      });
+    }
+
+    req.user = payload;
     next();
-  } catch (err) {
-    return res.status(401).json({ ok: false, message: "Token inválido o expirado" });
+  } catch (error) {
+    console.error("Error en authPublic:", error.message);
+
+    return res.status(401).json({
+      ok: false,
+      message: "Token inválido o expirado",
+    });
   }
 }
 
